@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Student;
 use Illuminate\Http\Request;
+use App\Http\Requests\storeStudent;
+use App\Http\Requests\updateStudent;
+use Illuminate\Support\Facades\Storage;
 
 class StudentController extends Controller
 {
@@ -16,7 +19,7 @@ class StudentController extends Controller
     {
         $students = Student::all();
 
-        return $students->toJson();
+        return reponse()->json($students);
     }
 
     /**
@@ -25,7 +28,7 @@ class StudentController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(storeStudent $request)
     {
         $newStudent = new Student;
 
@@ -34,8 +37,19 @@ class StudentController extends Controller
         $newStudent->email = $request->email;
         $newStudent->cpf = $request->cpf;
         $newStudent->telefone = $request->telefone;
+        if(!Storage::exists('LocalFiles/')) {
+                    Storage::makeDirectory('LocalFiles/', 0775, true);
+                }
+
+        $file = base64_decode($request->boletim);
+        $fileName = uniqid().'.pdf';
+        $path = storage_path('/app/LocalFiles/'.$fileName);
+        file_put_contents($path, $file);
+
+        $newStudent->boletim = $fileName;
 
         $newStudent->save();
+        return response()->json('Estudante criado com sucesso');
     }
 
     /**
@@ -56,7 +70,7 @@ class StudentController extends Controller
      * @param  \App\Student  $student
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Student $student)
+    public function update(updateStudent $request, Student $student)
     {
         if($request->nome){
           $student->nome = $request->nome;
@@ -73,8 +87,19 @@ class StudentController extends Controller
         if($request->telefone){
           $student->telefone = $request->telefone;
         }
+        if($request->boletim){
+            Storage::delete('LocalFiles/'.$student->boletim);
+            $file = base64_decode($request->boletim);
+            $fileName = uniqid().'.pdf';
+            $path = storage_path('/app/LocalFiles/'.$fileName);
+            file_put_contents($path, $file);
+
+            $newStudent->boletim = $fileName;
+
+        }
 
         $student->save();
+        return response()->json('Dado(s) do estudante atualizado(s) com sucesso!!');
     }
 
     /**
@@ -85,6 +110,13 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
+        Storage::delete('LocalFiles/'.$student->boletim);
         Student::destroy($student->id);
+        return response()->json('Estudante deletado com sucesso');
+    }
+
+    public function downloadFile(Student $student){
+        $filePath = storage_path('app/LocalFiles/'.$student->boletim);
+        return response()->download($filePath, $student->boletim);
     }
 }
