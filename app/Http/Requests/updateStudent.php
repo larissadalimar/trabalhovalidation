@@ -28,10 +28,9 @@ class updateStudent extends FormRequest
         return [
             'nome' => 'alpha',
             'idade' => 'integer|min:0',
-            'email' => 'email',
-            'cpf' => 'cpf',
-            'telefone' => 'telefone_com_ddd',
-            'boletim'=> 'file'
+            'email' => 'email|unique:students,email',
+            'cpf' => 'cpf|unique:students,cpf',
+            'telefone' => 'telefone_com_ddd'
         ];
     }
 

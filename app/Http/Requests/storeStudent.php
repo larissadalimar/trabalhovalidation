@@ -28,10 +28,9 @@ class storeStudent extends FormRequest
         return [
             'nome' => 'required|alpha',
             'idade' => 'required|integer|min:0',
-            'email' => 'required|email',
-            'cpf' => 'required|cpf',
-            'telefone' => 'required|telefone_com_ddd',
-            'boletim'=> 'file'
+            'email' => 'required|email|unique:students,email',
+            'cpf' => 'required|cpf|unique:students,cpf',
+            'telefone' => 'required|telefone_com_ddd'
         ];
     }
 

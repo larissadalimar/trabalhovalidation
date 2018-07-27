@@ -19,7 +19,7 @@ class StudentController extends Controller
     {
         $students = Student::all();
 
-        return reponse()->json($students);
+        return response()->json($students);
     }
 
     /**
@@ -94,7 +94,7 @@ class StudentController extends Controller
             $path = storage_path('/app/LocalFiles/'.$fileName);
             file_put_contents($path, $file);
 
-            $newStudent->boletim = $fileName;
+            $student->boletim = $fileName;
 
         }
 
@@ -115,7 +115,8 @@ class StudentController extends Controller
         return response()->json('Estudante deletado com sucesso');
     }
 
-    public function downloadFile(Student $student){
+    public function downloadFile($id){
+        $student = Student::find($id);
         $filePath = storage_path('app/LocalFiles/'.$student->boletim);
         return response()->download($filePath, $student->boletim);
     }
